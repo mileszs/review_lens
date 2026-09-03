@@ -1,0 +1,69 @@
+# frozen_string_literal: true
+
+inherit_from: .rubocop_todo.yml
+
+inherit_from: .rubocop_todo.yml
+
+
+plugins:
+  - rubocop-rspec
+
+AllCops:
+  NewCops: enable
+  SuggestExtensions: false
+  TargetRubyVersion: 3.1
+  Exclude:
+    - 'vendor/**/*'
+    - 'exe/**/*'
+    - '.git/**/*'
+
+Metrics/ClassLength:
+  Max: 200
+
+Metrics/MethodLength:
+  Max: 30
+  Exclude:
+    # A single CREATE TABLE heredoc; splitting it would obscure the schema.
+    - 'lib/review_lens/cache/store.rb'
+    # Inherited: long but flat hash construction. See .rubocop_todo.yml.
+    - 'lib/review_lens/presentation/data_mapper.rb'
+
+# Keyword arguments do not carry the ordering hazard this cop guards against,
+# and the value objects here are deliberately explicit.
+Metrics/ParameterLists:
+  CountKeywordArgs: false
+
+Metrics/AbcSize:
+  Max: 20
+
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+    - '*.gemspec'
+
+Layout/LineLength:
+  Max: 120
+
+Style/StringLiterals:
+  EnforcedStyle: single_quotes
+
+Style/Documentation:
+  Enabled: false
+
+RSpec/ExampleLength:
+  Max: 20
+
+RSpec/MultipleExpectations:
+  Max: 8
+
+RSpec/NestedGroups:
+  Max: 5
+
+# Integration-style specs legitimately set up a store, cache, config and window.
+RSpec/MultipleMemoizedHelpers:
+  Max: 8
+
+# The support directory holds test doubles, not example groups.
+RSpec/SpecFilePathFormat:
+  Exclude:
+    - 'spec/support/**/*'

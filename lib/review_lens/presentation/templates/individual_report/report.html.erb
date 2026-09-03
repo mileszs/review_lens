@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reviewer report — <%= h(@focus_login) %></title>
+  <style><%= inline_css %></style>
+  <style>
+    .wrap { max-width: 760px; margin: 0 auto; padding: 40px 24px 72px; }
+    .private { display:inline-block; font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+               color: var(--warn); border:1px solid var(--warn); border-radius:4px; padding:2px 8px; margin-bottom:14px; }
+    h1 { font-size: 26px; margin: 0 0 4px; }
+    h1 .who { font-family:"IBM Plex Mono",monospace; color: var(--accent); }
+    .sub { color: var(--ink-70); margin: 0 0 28px; font-size: 14px; }
+    .volume { display:flex; gap:28px; margin: 0 0 32px; padding: 16px 20px; background: var(--card);
+              border:1px solid var(--rule); border-radius:10px; }
+    .volume .n { font-family:"IBM Plex Mono",monospace; font-size: 26px; font-weight:600; }
+    .volume .l { color: var(--ink-60); font-size: 12px; }
+    .card { background: var(--card); border:1px solid var(--rule); border-radius:10px; padding:18px 20px; margin-bottom:16px; }
+    .card h2 { font-size: 15px; margin:0 0 2px; }
+    .card .note { color: var(--ink-60); font-size: 12.5px; margin: 0 0 14px; }
+    .vals { display:flex; align-items:baseline; gap:18px; margin-bottom:12px; flex-wrap:wrap; }
+    .vals .you { font-family:"IBM Plex Mono",monospace; font-size: 30px; font-weight:600; color: var(--ink); }
+    .vals .med { color: var(--ink-70); font-size: 13px; font-family:"IBM Plex Mono",monospace; }
+    .vals .rank { margin-left:auto; color: var(--ink-70); font-size: 12.5px; }
+    .na { color: var(--ink-60); font-size: 13px; font-style: italic; }
+    .strip { position:relative; height: 26px; margin-top: 6px; }
+    .strip::before { content:""; position:absolute; left:0; right:0; top:12px; height:2px; background: var(--rule); }
+    .dot { position:absolute; top:7px; width:8px; height:8px; margin-left:-4px; border-radius:50%; }
+    .dot.peer { background: var(--ink-50); }
+    .dot.me { top:4px; width:14px; height:14px; margin-left:-7px; background: var(--accent);
+              box-shadow: 0 0 0 3px var(--accent-soft); }
+    .tick.median { position:absolute; top:4px; width:2px; height:18px; margin-left:-1px; background: var(--ink-70); }
+    .legend { color: var(--ink-60); font-size: 11.5px; margin-top: 8px; }
+    .legend .k { display:inline-block; width:9px; height:9px; border-radius:50%; vertical-align:middle; margin:0 4px 0 12px; }
+    .legend .k.me { background: var(--accent); } .legend .k.peer { background: var(--ink-50); }
+    .mix { display:flex; height:22px; border-radius:5px; overflow:hidden; margin:8px 0 6px; }
+    .mix span { display:flex; align-items:center; justify-content:center; font-size:11px; color:#0d1a12; font-family:"IBM Plex Mono",monospace; }
+    .mix .sub { background: var(--accent); } .mix .brief { background: var(--warn); } .mix .min { background: var(--bad); }
+    .mixk { color: var(--ink-60); font-size: 11.5px; }
+    footer { color: var(--ink-60); font-size: 11.5px; margin-top: 32px; border-top:1px solid var(--rule); padding-top:14px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <% if no_activity? %>
+      <h1>No review activity</h1>
+      <p class="sub">
+        No reviews recorded for <span class="who"><%= h(@focus_login) %></span> in <%= h(period_label) %>.
+        <%= h(authored_note) %>
+      </p>
+      <p class="sub">
+        Comments on your own pull requests are not counted as reviews.
+      </p>
+    <% else %>
+      <span class="private">Private — your review activity</span>
+      <h1>Reviewer report — <span class="who"><%= h(@focus_login) %></span></h1>
+      <p class="sub"><%= h(meta[:repo]) %> · <%= h(period_label) %>. Compared against the team; peers are shown unlabeled.</p>
+
+      <div class="volume">
+        <div><div class="n"><%= focus[:total] %></div><div class="l">reviews</div></div>
+        <div><div class="n"><%= trim(focus[:share_pct]) %>%</div><div class="l">of all team reviews</div></div>
+        <div><div class="n"><%= focus[:prs_reviewed] %></div><div class="l">PRs reviewed</div></div>
+      </div>
+
+      <% metric_cards.each do |m| %>
+        <% ctx = m[:context] %>
+        <div class="card">
+          <h2><%= h(m[:label]) %></h2>
+          <p class="note"><%= h(m[:note]) %></p>
+          <% if ctx %>
+            <div class="vals">
+              <span class="you"><%= fmt(ctx[:value], m[:unit]) %></span>
+              <span class="med">team median <%= fmt(ctx[:median], m[:unit]) %></span>
+              <span class="rank"><%= h(comparison_phrase(m[:direction], ctx)) %></span>
+            </div>
+            <%= distribution_strip(ctx) %>
+            <div class="legend"><span class="k me"></span>you<span class="k peer"></span>a teammate (unlabeled) · vertical tick = team median</div>
+          <% else %>
+            <p class="na">Not enough of your activity in this window to compare.</p>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% if (mix = depth_mix) %>
+        <div class="card">
+          <h2>Your review depth mix</h2>
+          <p class="note">How your reviews break down by comment substance.</p>
+          <div class="mix">
+            <% if mix[:substantive].positive? %><span class="sub" style="width:<%= mix[:substantive] %>%"><%= mix[:substantive] %>%</span><% end %>
+            <% if mix[:brief].positive? %><span class="brief" style="width:<%= mix[:brief] %>%"><%= mix[:brief] %>%</span><% end %>
+            <% if mix[:minimal].positive? %><span class="min" style="width:<%= mix[:minimal] %>%"><%= mix[:minimal] %>%</span><% end %>
+          </div>
+          <div class="mixk">substantive · brief · minimal</div>
+        </div>
+      <% end %>
+
+      <footer>
+        Generated from merged-PR review data for <%= h(period_label) %>. Percentiles/ranks exclude bot accounts.
+        Shared privately — not published to the team dashboard.
+      </footer>
+    <% end %>
+  </div>
+</body>
+</html>

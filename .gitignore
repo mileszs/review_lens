@@ -1,0 +1,8 @@
+/.bundle/
+/pkg/
+/spec/examples.txt
+/coverage/
+/review-lens/
+*.gem
+.review-lens.yml
+Gemfile.lock
