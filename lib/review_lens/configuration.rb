@@ -140,7 +140,13 @@ module ReviewLens
 
     # Returns {} rather than raising when the file is absent or unreadable --
     # a first run has no config file and must still work.
+    #
+    # Pass `config_path: false` to skip the file entirely. Host applications
+    # that build a Configuration themselves need that, so a stray
+    # .review-lens.yml on a developer's machine cannot override them.
     def load_config_file(explicit_path)
+      return {} if explicit_path == false
+
       path = explicit_path || find_config_file
       return {} unless path && File.readable?(path)
 

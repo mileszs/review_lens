@@ -52,6 +52,23 @@ RSpec.describe ReviewLens::Configuration do
       end
     end
 
+    # A host application embedding the gem supplies its own settings and must
+    # not inherit whatever config file happens to sit above its working
+    # directory.
+    it 'skips file lookup entirely when config_path is false' do
+      Dir.mktmpdir do |tmp|
+        path = File.join(tmp, '.review-lens.yml')
+        File.write(path, { 'repo' => 'from/file', 'days' => 7 }.to_yaml)
+
+        Dir.chdir(tmp) do
+          cfg = described_class.new(config_path: false, repo: 'from/host')
+
+          expect(cfg.repo).to eq('from/host')
+          expect(cfg.days).to eq(90)
+        end
+      end
+    end
+
     it 'lets an explicit value win over the file' do
       Dir.mktmpdir do |tmp|
         path = File.join(tmp, '.review-lens.yml')
