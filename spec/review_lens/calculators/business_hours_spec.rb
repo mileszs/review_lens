@@ -90,6 +90,23 @@ RSpec.describe ReviewLens::Calculators::BusinessHours do
       expect(london.between(start_time, end_time)).to eq(3.0)
     end
 
+    # A distributed team may want every hour of a weekday to count.
+    it 'supports a full 24-hour weekday window' do
+      calc = described_class.new(start_hour: 0, end_hour: 24)
+
+      expect(calc.between(et(1, 0), et(2, 0))).to eq(24.0)
+    end
+
+    it 'still skips weekends with a 24-hour window' do
+      calc = described_class.new(start_hour: 0, end_hour: 24)
+
+      expect(calc.between(et(6, 0), et(8, 0))).to eq(0.0)
+    end
+
+    it 'rejects hours outside 0..24' do
+      expect { described_class.new(start_hour: 8, end_hour: 25) }.to raise_error(ArgumentError, /0\.\.24/)
+    end
+
     it 'rejects a window that ends before it starts' do
       expect { described_class.new(start_hour: 18, end_hour: 8) }
         .to raise_error(ArgumentError, /before/)

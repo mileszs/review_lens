@@ -75,7 +75,8 @@ lib/review_lens/
 ├── analyzer.rb             # store rows -> the metrics hash
 ├── analysis/               # independent calculations the analyzer composes
 │   ├── cross_team.rb       #   optional; nil when no teams configured
-│   ├── response_times.rb   #   initial vs re-review, in business hours
+│   ├── response_times.rb   #   initial response to a review request
+│   ├── rereviews.rb        #   coming back to a PR you held: speed + rate
 │   └── effectiveness.rb    #   changes-requested -> subsequent commits
 ├── calculators/            # pure functions, no I/O
 │   ├── median.rb           #   the only statistic the reviewer path needs
@@ -110,6 +111,7 @@ lib/review_lens/
   cross_team:          Hash | nil,       # nil when no teams configured
   response_times:      Hash | nil,
   effectiveness:       Hash | nil,
+  rereviews:           Hash | nil,       # coming back to PRs you held
   review_author_ratio: Hash | nil
 }
 ```
@@ -130,6 +132,14 @@ regression. A group of people is a *team*; the config key is `teams`.
 filters `reviewer_login != author_login`. Commenting on your own PR is not a
 review. A new query must do the same or it will disagree with the others — this
 was a real bug: 9 "reviews" alongside 0 "PRs reviewed".
+
+**Re-review is measured from the author's push, not from GitHub's "re-request
+review" button.** Most teams never press it — on the repo this was extracted
+from it produced 77 events in 90 days versus 442 reviewer-initiated returns — so
+keying off it measures a convention rather than the behaviour. Starting at the
+push also means a reviewer is never charged for the author's turnaround. A
+non-approving review the author never pushed after is excluded entirely: nobody
+was waiting.
 
 **Attribution is by the PR's `merged_at`, not the review's `submitted_at`.** A
 review counts toward the period its pull request merged in. Every query filters

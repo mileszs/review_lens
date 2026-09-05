@@ -31,6 +31,16 @@ module ReviewLens
           { key: :response_initial, label: 'Initial response time', unit: 'h', direction: :low,
             min_sample_key: :response_n, min_sample: 2,
             note: 'Median business hours to your first review after a request. Lower is faster.' },
+          { key: :response_re_review, label: 'Re-review response time', unit: 'h', direction: :low,
+            min_sample_key: :rereview_n, min_sample: 3,
+            note: 'Median business hours to come back after you asked for changes and the author ' \
+                  'pushed. The clock starts at their push, not at your review, so time they spent ' \
+                  'working is not counted against you.' },
+          { key: :return_rate, label: 'Return rate', unit: '%', direction: :high,
+            min_sample_key: :return_waits, min_sample: 3,
+            note: 'How often you came back at all after asking for changes and the author pushed. ' \
+                  'Not returning is not always a problem — someone else may have approved, or the ' \
+                  'comment may not have been blocking.' },
           { key: :ratio, label: 'Review / author ratio', unit: '%', direction: :high,
             min_sample_key: :prs_authored, min_sample: min_sample,
             note: 'PRs you reviewed as a share of PRs you authored.' },

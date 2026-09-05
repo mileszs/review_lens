@@ -23,6 +23,7 @@ require_relative 'review_lens/ingest'
 require_relative 'review_lens/analysis/cross_team'
 require_relative 'review_lens/analysis/response_times'
 require_relative 'review_lens/analysis/effectiveness'
+require_relative 'review_lens/analysis/rereviews'
 require_relative 'review_lens/analyzer'
 
 require_relative 'review_lens/presentation/anonymizer'

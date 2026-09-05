@@ -47,6 +47,7 @@ module ReviewLens
         review_pairs: @cache.fetch_review_author_pairs(**window),
         response_times: @cache.fetch_reviewer_response_times(**window),
         effectiveness: @cache.fetch_review_effectiveness(**window),
+        rereviews: @cache.fetch_rereview_returns(**window),
         prs_authored: @cache.fetch_prs_authored_in_period(**window),
         prs_reviewed: @cache.fetch_unique_prs_reviewed_in_period(**window)
       }
@@ -77,6 +78,7 @@ module ReviewLens
         cross_team: Analysis::CrossTeam.new(@config).call(data[:review_pairs] || []),
         response_times: Analysis::ResponseTimes.new(business_hours: business_hours).call(data[:response_times] || []),
         effectiveness: Analysis::Effectiveness.call(data[:effectiveness] || []),
+        rereviews: Analysis::Rereviews.new(business_hours: business_hours).call(data[:rereviews] || []),
         review_author_ratio: calculate_review_author_ratio(data[:prs_reviewed] || [], data[:prs_authored] || [])
       }
     end

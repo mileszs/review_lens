@@ -113,10 +113,16 @@ module ReviewLens
           reviewer[:response_n] = response[:review_count]
         end
 
-        # Merge re-review data
+        # Merge re-review data: how they come back to PRs they held.
         if rereview
           reviewer[:response_re_review] = rereview[:median_hours]
-          reviewer[:response_delta] = rereview[:delta_hours] if rereview[:delta_hours]
+          reviewer[:rereview_n] = rereview[:returned]
+          reviewer[:return_rate] = rereview[:return_rate]
+          reviewer[:return_waits] = rereview[:waits]
+          # Positive delta = slower to come back than to look the first time.
+          if rereview[:median_hours] && reviewer[:response_initial]
+            reviewer[:response_delta] = (rereview[:median_hours] - reviewer[:response_initial]).round(1)
+          end
         end
 
         # Merge effectiveness data
@@ -200,24 +206,7 @@ module ReviewLens
       end
 
       def build_rereview_lookup
-        response_times = @metrics[:response_times] || {}
-        comparison_stats = response_times[:comparison_stats] || []
-        rereview_stats = response_times.dig(:rereview_metrics, :reviewer_stats) || []
-
-        # Build lookup from comparison stats (has delta)
-        comparison_by_login = comparison_stats.to_h { |r| [r[:reviewer_login], r] }
-
-        # Build lookup from re-review stats (has median hours)
-        rereview_by_login = rereview_stats.to_h { |r| [r[:reviewer_login], r] }
-
-        # Merge them
-        all_logins = (comparison_by_login.keys + rereview_by_login.keys).uniq
-        all_logins.to_h do |login|
-          data = {}
-          data[:median_hours] = rereview_by_login.dig(login, :median_hours)
-          data[:delta_hours] = comparison_by_login.dig(login, :delta_hours)
-          [login, data]
-        end
+        (@metrics.dig(:rereviews, :reviewer_stats) || []).to_h { |r| [r[:reviewer_login], r] }
       end
 
       def build_effectiveness_lookup

@@ -315,4 +315,96 @@ RSpec.describe ReviewLens::Cache::GithubCache do
       expect(result).to eq([])
     end
   end
+
+  describe '#fetch_rereview_returns' do
+    def add_pr(number, author:, merged_at: '2026-02-10T12:00:00Z')
+      cache.store_pull_request(repo: repo, pr_data: {
+                                 'number' => number, 'title' => "PR #{number}",
+                                 'author' => { 'login' => author },
+                                 'createdAt' => '2026-02-01T09:00:00Z', 'mergedAt' => merged_at
+                               })
+    end
+
+    def add_review(number, login, state, at)
+      cache.store_reviews(repo: repo, pr_number: number, reviews: [
+                            { 'author' => { 'login' => login }, 'state' => state,
+                              'submittedAt' => at, 'body' => 'x' }
+                          ])
+    end
+
+    let(:window) { { repo: repo, since: Time.utc(2026, 1, 1), until_time: Time.utc(2026, 3, 1) } }
+
+    it 'pairs a blocking review with the push that followed and the return' do
+      add_pr(1, author: 'carol')
+      cache.store_reviews(repo: repo, pr_number: 1, reviews: [
+                            { 'author' => { 'login' => 'alice' }, 'state' => 'CHANGES_REQUESTED',
+                              'submittedAt' => '2026-02-02T10:00:00Z', 'body' => 'please fix' },
+                            { 'author' => { 'login' => 'alice' }, 'state' => 'APPROVED',
+                              'submittedAt' => '2026-02-03T15:00:00Z', 'body' => 'thanks' }
+                          ])
+      cache.store_commits(repo: repo, pr_number: 1,
+                          commits: [{ sha: 'a', author_login: 'carol', committed_at: '2026-02-03T09:00:00Z' }])
+
+      rows = cache.fetch_rereview_returns(**window)
+
+      expect(rows.length).to eq(1)
+      expect(rows.first).to include(reviewer_login: 'alice', pr_number: 1,
+                                    pushed_at: '2026-02-03T09:00:00Z',
+                                    returned_at: '2026-02-03T15:00:00Z')
+    end
+
+    it 'records a wait with no return when the reviewer never came back' do
+      add_pr(2, author: 'carol')
+      add_review(2, 'alice', 'CHANGES_REQUESTED', '2026-02-02T10:00:00Z')
+      cache.store_commits(repo: repo, pr_number: 2,
+                          commits: [{ sha: 'b', author_login: 'carol', committed_at: '2026-02-03T09:00:00Z' }])
+
+      rows = cache.fetch_rereview_returns(**window)
+
+      expect(rows.first[:returned_at]).to be_nil
+    end
+
+    # Nobody was waiting on the reviewer, so it is not their wait to answer.
+    it 'ignores a blocking review the author never pushed after' do
+      add_pr(3, author: 'carol')
+      add_review(3, 'alice', 'CHANGES_REQUESTED', '2026-02-02T10:00:00Z')
+
+      expect(cache.fetch_rereview_returns(**window)).to be_empty
+    end
+
+    it 'ignores approvals, which hold nothing' do
+      add_pr(4, author: 'carol')
+      add_review(4, 'alice', 'APPROVED', '2026-02-02T10:00:00Z')
+      cache.store_commits(repo: repo, pr_number: 4,
+                          commits: [{ sha: 'c', author_login: 'carol', committed_at: '2026-02-03T09:00:00Z' }])
+
+      expect(cache.fetch_rereview_returns(**window)).to be_empty
+    end
+
+    it 'ignores self-reviews' do
+      add_pr(5, author: 'alice')
+      add_review(5, 'alice', 'COMMENTED', '2026-02-02T10:00:00Z')
+      cache.store_commits(repo: repo, pr_number: 5,
+                          commits: [{ sha: 'd', author_login: 'alice', committed_at: '2026-02-03T09:00:00Z' }])
+
+      expect(cache.fetch_rereview_returns(**window)).to be_empty
+    end
+
+    # A later review that predates the push is not a response to it.
+    it 'treats a return that precedes the push as no return' do
+      add_pr(6, author: 'carol')
+      cache.store_reviews(repo: repo, pr_number: 6, reviews: [
+                            { 'author' => { 'login' => 'alice' }, 'state' => 'COMMENTED',
+                              'submittedAt' => '2026-02-02T10:00:00Z', 'body' => 'one' },
+                            { 'author' => { 'login' => 'alice' }, 'state' => 'COMMENTED',
+                              'submittedAt' => '2026-02-02T10:05:00Z', 'body' => 'two' }
+                          ])
+      cache.store_commits(repo: repo, pr_number: 6,
+                          commits: [{ sha: 'e', author_login: 'carol', committed_at: '2026-02-04T09:00:00Z' }])
+
+      rows = cache.fetch_rereview_returns(**window).select { |r| r[:pr_number] == 6 }
+
+      expect(rows.map { |r| r[:returned_at] }).to all(be_nil)
+    end
+  end
 end

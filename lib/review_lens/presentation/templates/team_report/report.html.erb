@@ -422,6 +422,7 @@
               <th>Initial</th>
               <th>Re-review</th>
               <th>Δ</th>
+              <th>Came back</th>
               <th>N</th>
             </tr>
           </thead>
@@ -437,6 +438,9 @@
               </td>
               <td class="mono"><%= format_hours(r[:response_re_review]) %></td>
               <td class="mono" style="color: <%= delta_color(r[:response_delta]) %>; font-weight: <%= r[:response_delta] && r[:response_delta].abs > 3 ? '600' : '400' %>"><%= format_delta(r[:response_delta]) %></td>
+              <td class="mono" title="Returned after the author pushed, out of the times they were waited on"><%=
+                r[:return_rate] ? "#{r[:return_rate]}% (#{r[:rereview_n]}/#{r[:return_waits]})" : '—'
+              %></td>
               <td class="mono"><%= r[:response_n] || '—' %></td>
             </tr>
             <%- end -%>
@@ -526,7 +530,8 @@
 
           <p><strong>Review depth</strong> is categorized by comment length: Minimal (&lt;10 chars), Brief (10-99 chars), Substantive (100+ chars). Depth% is the proportion of substantive reviews.</p>
 
-          <p><strong>Response times</strong> are measured in business hours (weekdays 8am-6pm ET) from review request to first review submission. Re-review delta compares initial response to follow-up response after changes.</p>
+          <p><strong>Response times</strong> are measured in business hours (weekdays 8am-6pm ET) from review request to first review submission.</p>
+          <p><strong>Re-review</strong> is the median time to come back to a pull request you held &mdash; you requested changes, or commented without approving, and the author then pushed. The clock starts at <em>their push</em>, not at your review, so time the author spent working is not counted against the reviewer. <strong>Came back</strong> is how often they returned at all. Not returning is not automatically a problem: someone else may have approved, or the comment may not have been blocking. <strong>&Delta;</strong> compares re-review time with initial response time.</p>
 
           <p><strong>Bus factor</strong> is the minimum number of reviewers who together account for 50% of all reviews. <strong>Gini coefficient</strong> measures inequality (0 = perfectly equal, 1 = one person does everything).</p>
 

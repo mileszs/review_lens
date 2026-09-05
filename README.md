@@ -159,10 +159,23 @@ Environment: `REVIEW_LENS_REPO`, `REVIEW_LENS_DB`, `REVIEW_LENS_TZ`, `FRESH=true
 | **Approval rate** | Approvals as a share of *actionable* reviews (approve + request changes). Comment-only reviews are excluded. | 5 actionable |
 | **Substantive depth** | Share of reviews whose comment exceeds the substantive threshold. Length is a crude proxy for engagement. | 5 reviews |
 | **Initial response time** | Median **business hours** from review request to first review. | 2 requests |
+| **Re-review response time** | Median business hours to come back to a PR you held — you requested changes or commented without approving, and the author then pushed. The clock starts at **their push**, not your review. | 3 returns |
+| **Return rate** | How often you came back at all after holding a PR and the author pushed. | 3 waits |
 | **Review / author ratio** | PRs reviewed as a percentage of PRs authored. 100% means you review as many as you write. | 5 authored |
 | **Cross-team reviews** | Share of reviews on PRs authored outside your team. Requires a team map. | — |
 | **Gini / bus factor** | How concentrated reviewing is across the team. | — |
 | **Review effectiveness** | How often a "changes requested" review was followed by more commits. A proxy, not a verdict. | — |
+
+**Why re-review is measured from the push.** GitHub has a "re-request review"
+button, but most teams don't use it — authors just push and reviewers come back.
+Keying off the button measures a convention rather than the behaviour, so this
+starts the clock when the author pushes instead. A reviewer is never charged for
+the days an author spent making the changes.
+
+Speed and follow-through are shown separately on purpose: a good median can hide
+the threads someone never returned to. Not returning is not automatically a
+failure — someone else may have approved, or the comment may not have been
+blocking — and the reports say so.
 
 Two things worth knowing:
 

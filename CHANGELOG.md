@@ -21,6 +21,11 @@ generalized.
 - Optional team map for cross-team review analysis. Omit it and the section is
   left out rather than reported as zeroes.
 - Optional anonymized team report.
+- **Re-review response time and return rate.** After someone requests changes
+  (or comments without approving) and the author pushes, somebody is waiting on
+  that reviewer. Both reports now show how quickly they come back and how often
+  they come back at all, measured from the author's push so a reviewer is not
+  charged for the author's turnaround.
 - Configuration via `.review-lens.yml`, environment, or CLI flags: working
   hours and timezone, bot logins, review-depth thresholds, minimum sample size,
   base branch, and output directory.

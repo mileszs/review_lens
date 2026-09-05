@@ -68,14 +68,15 @@ RSpec.describe ReviewLens::Presentation::DataMapper do
         responded_count: 454,
         reviewer_stats: [
           { reviewer_login: 'bob', median_hours: 0.9, review_count: 36 }
-        ],
-        rereview_metrics: {
-          reviewer_stats: [
-            { reviewer_login: 'bob', median_hours: 0.8 }
-          ]
-        },
-        comparison_stats: [
-          { reviewer_login: 'bob', initial_hours: 0.9, rereview_hours: 0.8, delta_hours: -0.1 }
+        ]
+      },
+      rereviews: {
+        total_waits: 40,
+        total_returned: 18,
+        overall_return_rate: 45.0,
+        overall_median_hours: 1.1,
+        reviewer_stats: [
+          { reviewer_login: 'bob', waits: 12, returned: 9, return_rate: 75.0, median_hours: 0.8 }
         ]
       },
       effectiveness: {
@@ -207,7 +208,17 @@ RSpec.describe ReviewLens::Presentation::DataMapper do
       it 'includes response time data' do
         expect(reviewer[:response_initial]).to eq(0.9)
         expect(reviewer[:response_n]).to eq(36)
+      end
+
+      it 'includes re-review data: how they come back to PRs they held' do
         expect(reviewer[:response_re_review]).to eq(0.8)
+        expect(reviewer[:rereview_n]).to eq(9)
+        expect(reviewer[:return_rate]).to eq(75.0)
+        expect(reviewer[:return_waits]).to eq(12)
+      end
+
+      it 'derives the delta between coming back and looking the first time' do
+        # 0.8 re-review vs 0.9 initial: slightly quicker to return.
         expect(reviewer[:response_delta]).to eq(-0.1)
       end
 

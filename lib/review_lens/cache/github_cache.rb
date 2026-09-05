@@ -240,6 +240,49 @@ module ReviewLens
 
       # Returns Array of { reviewer_login:, pr_number:, review_submitted_at:, had_subsequent_commit: }
       # for CHANGES_REQUESTED reviews in date range
+      # Every non-approving review where the reviewer was, in effect, holding the
+      # pull request: they requested changes or commented without approving.
+      #
+      # For each one: when the author next pushed (nothing to come back to
+      # before that), and when the reviewer next looked (nil if they never did).
+      #
+      # This is deliberately not based on GitHub's "re-request review" button.
+      # Most teams do not use it -- authors just push and reviewers come back --
+      # so keying off it measures a convention rather than the behaviour.
+      def fetch_rereview_returns(repo:, since:, until_time:)
+        rows = @db.execute(
+          'SELECT r.reviewer_login, r.pr_number, r.submitted_at AS blocked_at, ' \
+          '(SELECT MIN(c.committed_at) FROM pr_commits c ' \
+          'WHERE c.repo = r.repo AND c.pr_number = r.pr_number ' \
+          'AND c.committed_at > r.submitted_at) AS pushed_at, ' \
+          '(SELECT MIN(r2.submitted_at) FROM pr_reviews r2 ' \
+          'WHERE r2.repo = r.repo AND r2.pr_number = r.pr_number ' \
+          'AND r2.reviewer_login = r.reviewer_login ' \
+          'AND r2.submitted_at > r.submitted_at) AS returned_at ' \
+          'FROM pr_reviews r ' \
+          'JOIN github_pull_requests p ON r.repo = p.repo AND r.pr_number = p.pr_number ' \
+          'WHERE r.repo = ? AND p.merged_at BETWEEN ? AND ? ' \
+          'AND r.reviewer_login != p.author_login ' \
+          "AND r.state IN ('CHANGES_REQUESTED', 'COMMENTED')",
+          [repo, since.iso8601, until_time.iso8601]
+        )
+
+        rows.filter_map do |row|
+          # No push means the reviewer was never waited on; exclude entirely.
+          next unless row['pushed_at']
+
+          returned_at = row['returned_at']
+          returned_at = nil if returned_at && returned_at <= row['pushed_at']
+
+          {
+            reviewer_login: row['reviewer_login'],
+            pr_number: row['pr_number'],
+            pushed_at: row['pushed_at'],
+            returned_at: returned_at
+          }
+        end
+      end
+
       def fetch_review_effectiveness(repo:, since:, until_time:)
         rows = @db.execute(
           'SELECT r.reviewer_login, r.pr_number, r.submitted_at,   ' \

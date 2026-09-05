@@ -18,8 +18,11 @@ module ReviewLens
 
       attr_reader :timezone, :start_hour, :end_hour
 
+      # end_hour 24 means midnight at the end of the day, so a team spread
+      # across timezones can count every hour of a weekday.
       def initialize(timezone: 'America/New_York', start_hour: 8, end_hour: 18)
         raise ArgumentError, 'start_hour must be before end_hour' unless start_hour < end_hour
+        raise ArgumentError, 'hours must be within 0..24' unless start_hour >= 0 && end_hour <= 24
 
         @tz = TZInfo::Timezone.get(timezone)
         @timezone = timezone
@@ -64,7 +67,9 @@ module ReviewLens
       # ambiguity to the first matching period. Returns nil for a wall-clock
       # time that does not exist on that date (spring-forward gap).
       def utc_at(date, hour)
-        local = @tz.local_time(date.year, date.month, date.day, hour, 0, 0)
+        day = hour == 24 ? date + 1 : date
+        clock = hour == 24 ? 0 : hour
+        local = @tz.local_time(day.year, day.month, day.day, clock, 0, 0)
         @tz.local_to_utc(local, &:first)
       rescue TZInfo::PeriodNotFound
         nil

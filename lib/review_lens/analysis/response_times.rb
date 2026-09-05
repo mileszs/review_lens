@@ -21,19 +21,17 @@ module ReviewLens
         initial = for_group(rows.reject { |r| r[:is_rerequest] })
         return nil unless initial
 
-        combine(rows, initial, for_group(rows.select { |r| r[:is_rerequest] }))
+        combine(rows, initial)
       end
 
       private
 
-      def combine(rows, initial, rereview)
+      def combine(rows, initial)
         {
           overall_median_hours: initial[:overall_median_hours],
           total_requests: rows.length,
-          responded_count: initial[:responded_count] + (rereview&.dig(:responded_count) || 0),
-          reviewer_stats: initial[:reviewer_stats],
-          rereview_metrics: rereview,
-          comparison_stats: comparison(initial, rereview)
+          responded_count: initial[:responded_count],
+          reviewer_stats: initial[:reviewer_stats]
         }
       end
 
@@ -78,33 +76,6 @@ module ReviewLens
           }
         end
         stats.sort_by { |row| row[:median_hours] }
-      end
-
-      # Reviewers who have both initial and re-review data, sorted by the
-      # biggest slowdown on second look.
-      def comparison(initial, rereview)
-        return nil unless rereview
-
-        first = medians_by_login(initial)
-        second = medians_by_login(rereview)
-        common = first.keys & second.keys
-        return nil if common.empty?
-
-        deltas = common.map { |login| delta_row(login, first[login], second[login]) }
-        deltas.sort_by { |row| -row[:delta_hours] }
-      end
-
-      def medians_by_login(metrics)
-        metrics[:reviewer_stats].to_h { |stat| [stat[:reviewer_login], stat[:median_hours]] }
-      end
-
-      def delta_row(login, initial_hours, rereview_hours)
-        {
-          reviewer_login: login,
-          initial_hours: initial_hours,
-          rereview_hours: rereview_hours,
-          delta_hours: (rereview_hours - initial_hours).round(1)
-        }
       end
     end
   end
