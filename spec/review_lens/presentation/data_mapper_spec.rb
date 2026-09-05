@@ -53,13 +53,13 @@ RSpec.describe ReviewLens::Presentation::DataMapper do
         top_3_share: 37.7,
         health: :moderate
       },
-      cross_squad: {
-        same_squad_reviews: 471,
-        cross_squad_reviews: 350,
+      cross_team: {
+        same_team_reviews: 471,
+        cross_team_reviews: 350,
         external_reviews: 629,
-        cross_squad_rate: 42.6,
+        cross_team_rate: 42.6,
         reviewer_stats: [
-          { reviewer_login: 'bob', same_squad: 13, cross_squad: 156, cross_squad_rate: 92.3 }
+          { reviewer_login: 'bob', same_team: 13, cross_team: 156, cross_team_rate: 92.3 }
         ]
       },
       response_times: {
@@ -140,10 +140,10 @@ RSpec.describe ReviewLens::Presentation::DataMapper do
                                            ])
     end
 
-    it 'includes cross-squad metrics' do
-      expect(meta[:cross_squad][:same]).to eq(471)
-      expect(meta[:cross_squad][:cross]).to eq(350)
-      expect(meta[:cross_squad][:rate]).to eq(42.6)
+    it 'includes cross-team metrics' do
+      expect(meta[:cross_team][:same]).to eq(471)
+      expect(meta[:cross_team][:cross]).to eq(350)
+      expect(meta[:cross_team][:rate]).to eq(42.6)
     end
 
     it 'includes response time metrics' do
@@ -198,10 +198,10 @@ RSpec.describe ReviewLens::Presentation::DataMapper do
         expect(reviewer[:depth_pct]).to eq(23.6)
       end
 
-      it 'includes cross-squad data' do
-        expect(reviewer[:cross_squad_same]).to eq(13)
-        expect(reviewer[:cross_squad_cross]).to eq(156)
-        expect(reviewer[:cross_squad_rate]).to eq(92.3)
+      it 'includes cross-team data' do
+        expect(reviewer[:cross_team_same]).to eq(13)
+        expect(reviewer[:cross_team_cross]).to eq(156)
+        expect(reviewer[:cross_team_rate]).to eq(92.3)
       end
 
       it 'includes response time data' do

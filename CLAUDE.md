@@ -107,7 +107,7 @@ lib/review_lens/
   total_reviews:       Integer,
   review_rounds:       { total_prs:, distribution:, median:, mean:, max: },
   distribution:        { gini:, bus_factor:, top_reviewer_share:, ... },
-  cross_squad:         Hash | nil,       # nil when no teams configured
+  cross_team:          Hash | nil,       # nil when no teams configured
   response_times:      Hash | nil,
   effectiveness:       Hash | nil,
   review_author_ratio: Hash | nil
@@ -116,16 +116,15 @@ lib/review_lens/
 
 `DataMapper#reviewers` returns one hash per person. Keys the individual report
 compares on: `approval_pct`, `depth_pct`, `response_initial`, `ratio`,
-`cross_squad_rate` — each gated by a sample key (`actionable`, `total`,
+`cross_team_rate` — each gated by a sample key (`actionable`, `total`,
 `response_n`, `prs_authored`).
 
 ## Conventions that are easy to violate
 
-**Internal keys say `squad`; user-facing text says "team".** The metrics hash
-and reviewer hashes use `cross_squad`, `same_squad`, `cross_squad_rate` —
-inherited names kept so the templates and specs line up. Every string a user
-reads says "team". Don't rename the keys casually (it touches templates, mapper,
-and specs), and don't let "squad" leak into display text.
+**The vocabulary is "team", everywhere.** Hash keys, methods, comments, display
+text, config. The tool this was extracted from called them squads; that name was
+renamed out entirely before release, so `squad` appearing anywhere is a
+regression. A group of people is a *team*; the config key is `teams`.
 
 **Self-reviews are excluded everywhere.** Every read in `github_cache.rb`
 filters `reviewer_login != author_login`. Commenting on your own PR is not a

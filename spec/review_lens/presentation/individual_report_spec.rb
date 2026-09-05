@@ -11,7 +11,7 @@ RSpec.describe ReviewLens::Presentation::IndividualReport do
       stats('alice', approved: 45, changes: 12, commented: 30, minimal: 40, brief: 25, substantive: 22, authored: 15),
       stats('bob',   approved: 30, changes: 5,  commented: 15, minimal: 30, brief: 10, substantive: 10, authored: 20),
       stats('carol', approved: 20, changes: 10, commented: 5,  minimal: 10, brief: 8,  substantive: 14, authored: 12),
-      # dave is intentionally sparse (no response/ratio/cross-squad sub-hash entries)
+      # dave is intentionally sparse (no response/ratio/cross-team sub-hash entries)
       stats('dave',  approved: 8,  changes: 1,  commented: 2,  minimal: 6,  brief: 3,  substantive: 2,  authored: 30),
       stats('github-actions', approved: 0, changes: 0, commented: 100, minimal: 100, brief: 0, substantive: 0,
                               authored: 0)
@@ -22,12 +22,12 @@ RSpec.describe ReviewLens::Presentation::IndividualReport do
       reviewer_stats: reviewer_stats, total_reviewers: 5, total_reviews: 330,
       review_rounds: { total_prs: 150, distribution: { 1 => 120, 2 => 25, '3+' => 5 }, median: 1, mean: 1.3, max: 4 },
       distribution: { gini: 0.35, bus_factor: 4, top_reviewer_share: 22, top_3_share: 55, health: :healthy },
-      cross_squad: { same_squad_reviews: 100, cross_squad_reviews: 80, external_reviews: 57, cross_squad_rate: 44.4,
-                     reviewer_stats: [
-                       { reviewer_login: 'alice', same_squad: 20, cross_squad: 37, cross_squad_rate: 64.9 },
-                       { reviewer_login: 'bob', same_squad: 30, cross_squad: 20, cross_squad_rate: 40.0 },
-                       { reviewer_login: 'carol', same_squad: 25, cross_squad: 10, cross_squad_rate: 28.6 }
-                     ] },
+      cross_team: { same_team_reviews: 100, cross_team_reviews: 80, external_reviews: 57, cross_team_rate: 44.4,
+                    reviewer_stats: [
+                      { reviewer_login: 'alice', same_team: 20, cross_team: 37, cross_team_rate: 64.9 },
+                      { reviewer_login: 'bob', same_team: 30, cross_team: 20, cross_team_rate: 40.0 },
+                      { reviewer_login: 'carol', same_team: 25, cross_team: 10, cross_team_rate: 28.6 }
+                    ] },
       response_times: { overall_median_hours: 1.2, total_requests: 200, responded_count: 150,
                         reviewer_stats: [
                           { reviewer_login: 'alice', median_hours: 0.8, review_count: 45 },
@@ -88,7 +88,7 @@ RSpec.describe ReviewLens::Presentation::IndividualReport do
     it 'renders without error for a reviewer missing optional data, degrading those metrics' do
       sparse = report_for('dave')
       expect { sparse.render }.not_to raise_error
-      # dave has no response/ratio/cross-squad entries -> those cards say so
+      # dave has no response/ratio/cross-team entries -> those cards say so
       expect(sparse.render).to include('Not enough of your activity')
     end
 

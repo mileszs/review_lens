@@ -19,19 +19,19 @@ RSpec.describe ReviewLens::Analysis::CrossTeam do
   end
 
   it 'separates same-team, cross-team and external reviews' do
-    expect(result[:same_squad_reviews]).to eq(4)
-    expect(result[:cross_squad_reviews]).to eq(6)
+    expect(result[:same_team_reviews]).to eq(4)
+    expect(result[:cross_team_reviews]).to eq(6)
     expect(result[:external_reviews]).to eq(5)
   end
 
   it 'excludes external reviews from the rate, since their team is unknown' do
-    expect(result[:cross_squad_rate]).to eq(60.0) # 6 of 10 known
+    expect(result[:cross_team_rate]).to eq(60.0) # 6 of 10 known
   end
 
   it 'breaks the same figures down per reviewer' do
     alice = result[:reviewer_stats].find { |s| s[:reviewer_login] == 'alice' }
 
-    expect(alice).to include(same_squad: 4, cross_squad: 6, external: 5, cross_squad_rate: 60.0)
+    expect(alice).to include(same_team: 4, cross_team: 6, external: 5, cross_team_rate: 60.0)
   end
 
   # Teams are optional. Without them this metric is meaningless, and reporting
@@ -53,6 +53,6 @@ RSpec.describe ReviewLens::Analysis::CrossTeam do
   it 'reports a zero rate when every known review is within one team' do
     only_same = [{ reviewer_login: 'alice', author_login: 'bob', count: 3 }]
 
-    expect(described_class.new(config(teams)).call(only_same)[:cross_squad_rate]).to eq(0)
+    expect(described_class.new(config(teams)).call(only_same)[:cross_team_rate]).to eq(0)
   end
 end

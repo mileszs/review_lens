@@ -223,9 +223,9 @@ module ReviewLens
         reviewers.reject { |r| r[:bot] }.select { |r| r[:response_initial] && (r[:response_n] || 0) >= 2 }
       end
 
-      # Get reviewers with cross-squad data
-      def cross_squad_reviewers
-        reviewers.reject { |r| r[:bot] }.select { |r| r[:cross_squad_same] || r[:cross_squad_cross] }
+      # Get reviewers with cross-team data
+      def cross_team_reviewers
+        reviewers.reject { |r| r[:bot] }.select { |r| r[:cross_team_same] || r[:cross_team_cross] }
       end
 
       # Get reviewers with ratio data

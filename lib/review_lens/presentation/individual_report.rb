@@ -34,7 +34,7 @@ module ReviewLens
           { key: :ratio, label: 'Review / author ratio', unit: '%', direction: :high,
             min_sample_key: :prs_authored, min_sample: min_sample,
             note: 'PRs you reviewed as a share of PRs you authored.' },
-          { key: :cross_squad_rate, label: 'Cross-team reviews', unit: '%', direction: :high,
+          { key: :cross_team_rate, label: 'Cross-team reviews', unit: '%', direction: :high,
             min_sample_key: nil, min_sample: 0,
             note: 'Share of your reviews on PRs outside your own team.' }
         ]
@@ -88,7 +88,7 @@ module ReviewLens
       def metric_cards
         definitions = self.class.metric_definitions(@config.min_sample)
         # Cross-team only means something when teams are configured.
-        definitions = definitions.reject { |m| m[:key] == :cross_squad_rate } unless @config.teams?
+        definitions = definitions.reject { |m| m[:key] == :cross_team_rate } unless @config.teams?
         definitions.map do |metric|
           context = percentiles.for_metric(metric[:key],
                                            min_sample_key: metric[:min_sample_key],

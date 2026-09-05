@@ -84,7 +84,7 @@ RSpec.describe ReviewLens::Analyzer do
     end
 
     it 'includes cross-team data when teams are configured' do
-      expect(metrics[:cross_squad]).not_to be_nil
+      expect(metrics[:cross_team]).not_to be_nil
     end
   end
 
@@ -97,7 +97,7 @@ RSpec.describe ReviewLens::Analyzer do
     it 'omits cross-team data rather than reporting zeroes' do
       result = described_class.new(config: config, cache: cache).call(since: since, until_time: until_time)
 
-      expect(result[:cross_squad]).to be_nil
+      expect(result[:cross_team]).to be_nil
     end
   end
 

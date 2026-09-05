@@ -74,7 +74,7 @@ module ReviewLens
       {
         review_rounds: calculate_review_rounds(data[:per_pr] || []),
         distribution: calculate_distribution(sorted),
-        cross_squad: Analysis::CrossTeam.new(@config).call(data[:review_pairs] || []),
+        cross_team: Analysis::CrossTeam.new(@config).call(data[:review_pairs] || []),
         response_times: Analysis::ResponseTimes.new(business_hours: business_hours).call(data[:response_times] || []),
         effectiveness: Analysis::Effectiveness.call(data[:effectiveness] || []),
         review_author_ratio: calculate_review_author_ratio(data[:prs_reviewed] || [], data[:prs_authored] || [])

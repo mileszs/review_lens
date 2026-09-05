@@ -7,7 +7,7 @@ module ReviewLens
     # Entirely optional: with no team map configured this returns nil and the
     # section is omitted from reports rather than rendered as zeroes.
     #
-    # The output keys keep the `cross_squad` naming used by the report
+    # The output keys keep the `cross_team` naming used by the report
     # templates and data mapper.
     class CrossTeam
       def initialize(config)
@@ -48,10 +48,10 @@ module ReviewLens
 
       def build(totals, per_reviewer)
         {
-          same_squad_reviews: totals[:same],
-          cross_squad_reviews: totals[:cross],
+          same_team_reviews: totals[:same],
+          cross_team_reviews: totals[:cross],
           external_reviews: totals[:external],
-          cross_squad_rate: rate(totals[:cross], totals[:same] + totals[:cross]),
+          cross_team_rate: rate(totals[:cross], totals[:same] + totals[:cross]),
           reviewer_stats: reviewer_stats(per_reviewer)
         }
       end
@@ -60,13 +60,13 @@ module ReviewLens
         rows = per_reviewer.map do |login, counts|
           {
             reviewer_login: login,
-            same_squad: counts[:same],
-            cross_squad: counts[:cross],
+            same_team: counts[:same],
+            cross_team: counts[:cross],
             external: counts[:external],
-            cross_squad_rate: rate(counts[:cross], counts[:same] + counts[:cross])
+            cross_team_rate: rate(counts[:cross], counts[:same] + counts[:cross])
           }
         end
-        rows.sort_by { |row| -row[:cross_squad] }
+        rows.sort_by { |row| -row[:cross_team] }
       end
 
       def rate(part, total)

@@ -52,6 +52,9 @@ generalized.
   internal tool for even-sized samples.
 - Business hours, timezone, and depth thresholds are configurable rather than
   hardcoded to 8am-6pm US Eastern.
+- **"Squad" is renamed to "team" throughout**, including the metrics hash keys
+  (`cross_team`, `same_team_reviews`, `cross_team_rate`). The internal tool used
+  its own org's word for a group of people; nothing in the public gem does.
 - No third-party font CDN: reports are fully self-contained and render offline.
 
 ### Known limitations

@@ -17,7 +17,7 @@ module ReviewLens
       def report_meta
         review_rounds = @metrics[:review_rounds] || {}
         distribution = @metrics[:distribution] || {}
-        cross_squad = @metrics[:cross_squad] || {}
+        cross_team = @metrics[:cross_team] || {}
         response_times = @metrics[:response_times] || {}
         effectiveness = @metrics[:effectiveness] || {}
 
@@ -37,11 +37,11 @@ module ReviewLens
           top_3_share: distribution[:top_3_share],
           health: format_health(distribution[:health]),
           pr_distribution: map_pr_distribution(review_rounds[:distribution]),
-          cross_squad: {
-            same: cross_squad[:same_squad_reviews] || 0,
-            cross: cross_squad[:cross_squad_reviews] || 0,
-            external: cross_squad[:external_reviews] || 0,
-            rate: cross_squad[:cross_squad_rate] || 0
+          cross_team: {
+            same: cross_team[:same_team_reviews] || 0,
+            cross: cross_team[:cross_team_reviews] || 0,
+            external: cross_team[:external_reviews] || 0,
+            rate: cross_team[:cross_team_rate] || 0
           },
           response_initial_median: response_times[:overall_median_hours],
           response_requests: response_times[:total_requests] || 0,
@@ -59,7 +59,7 @@ module ReviewLens
         total_reviews = @metrics[:total_reviews] || 0
 
         # Build lookup tables for supplementary data
-        cross_squad_by_login = build_cross_squad_lookup
+        cross_team_by_login = build_cross_team_lookup
         response_by_login = build_response_lookup
         rereview_by_login = build_rereview_lookup
         effectiveness_by_login = build_effectiveness_lookup
@@ -67,7 +67,7 @@ module ReviewLens
 
         reviewer_stats.map do |stats|
           login = stats.reviewer_login
-          map_reviewer(stats, total_reviews, cross_squad_by_login[login],
+          map_reviewer(stats, total_reviews, cross_team_by_login[login],
                        response_by_login[login], rereview_by_login[login],
                        effectiveness_by_login[login], ratio_by_login[login])
         end
@@ -75,7 +75,7 @@ module ReviewLens
 
       private
 
-      def map_reviewer(stats, total_reviews, cross_squad, response, rereview, effectiveness, ratio_data)
+      def map_reviewer(stats, total_reviews, cross_team, response, rereview, effectiveness, ratio_data)
         login = stats.reviewer_login
         total = stats.total_reviews
         actionable = stats.approved_count + stats.changes_requested_count
@@ -100,11 +100,11 @@ module ReviewLens
           ratio: ratio_data&.dig(:ratio)
         }
 
-        # Merge cross-squad data
-        if cross_squad
-          reviewer[:cross_squad_same] = cross_squad[:same_squad]
-          reviewer[:cross_squad_cross] = cross_squad[:cross_squad]
-          reviewer[:cross_squad_rate] = cross_squad[:cross_squad_rate]
+        # Merge cross-team data
+        if cross_team
+          reviewer[:cross_team_same] = cross_team[:same_team]
+          reviewer[:cross_team_cross] = cross_team[:cross_team]
+          reviewer[:cross_team_rate] = cross_team[:cross_team_rate]
         end
 
         # Merge response time data
@@ -187,9 +187,9 @@ module ReviewLens
         end
       end
 
-      def build_cross_squad_lookup
-        cross_squad = @metrics[:cross_squad] || {}
-        reviewer_stats = cross_squad[:reviewer_stats] || []
+      def build_cross_team_lookup
+        cross_team = @metrics[:cross_team] || {}
+        reviewer_stats = cross_team[:reviewer_stats] || []
         reviewer_stats.to_h { |r| [r[:reviewer_login], r] }
       end
 

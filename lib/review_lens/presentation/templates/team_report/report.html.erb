@@ -252,14 +252,14 @@
                       <div class="exp-stat__label">Share</div>
                       <div class="exp-stat__value"><%= r[:share_pct].round(1) %>%</div>
                     </div>
-                    <%- if r[:cross_squad_same] || r[:cross_squad_cross] -%>
+                    <%- if r[:cross_team_same] || r[:cross_team_cross] -%>
                     <div class="exp-stat">
                       <div class="exp-stat__label">Same Team</div>
-                      <div class="exp-stat__value"><%= r[:cross_squad_same] || 0 %></div>
+                      <div class="exp-stat__value"><%= r[:cross_team_same] || 0 %></div>
                     </div>
                     <div class="exp-stat">
                       <div class="exp-stat__label">Cross Team</div>
-                      <div class="exp-stat__value"><%= r[:cross_squad_cross] || 0 %></div>
+                      <div class="exp-stat__value"><%= r[:cross_team_cross] || 0 %></div>
                     </div>
                     <%- end -%>
                     <%- if r[:chg_req_rate] -%>
@@ -447,7 +447,7 @@
       <!-- Cross-Team Participation -->
       <section class="section" id="cross-team">
         <div class="section__hd"><h2><span class="num">07</span>Cross-Team Participation</h2></div>
-        <p class="section__sub">Reviews given to PRs from other teams vs the same team. Overall rate: <%= meta[:cross_squad][:rate].round(1) %>%</p>
+        <p class="section__sub">Reviews given to PRs from other teams vs the same team. Overall rate: <%= meta[:cross_team][:rate].round(1) %>%</p>
         <table class="compact-table">
           <thead>
             <tr>
@@ -458,20 +458,20 @@
             </tr>
           </thead>
           <tbody>
-            <%- cs_range = cross_squad_reviewers.map { |r| r[:cross_squad_rate] }.compact -%>
+            <%- cs_range = cross_team_reviewers.map { |r| r[:cross_team_rate] }.compact -%>
             <%- cs_min = cs_range.min || 0 -%>
             <%- cs_max = cs_range.max || 100 -%>
-            <%- cross_squad_reviewers.sort_by { |r| -(r[:cross_squad_rate] || 0) }.each do |r| -%>
-              <%- cs_total = (r[:cross_squad_same] || 0) + (r[:cross_squad_cross] || 0) -%>
+            <%- cross_team_reviewers.sort_by { |r| -(r[:cross_team_rate] || 0) }.each do |r| -%>
+              <%- cs_total = (r[:cross_team_same] || 0) + (r[:cross_team_cross] || 0) -%>
             <tr>
               <td><%= h(r[:name]) %></td>
               <td>
-                <div class="stackbar" title="Same: <%= r[:cross_squad_same] || 0 %> · Cross: <%= r[:cross_squad_cross] || 0 %>">
-                  <div class="stackbar__seg" style="width: <%= cs_total > 0 ? ((r[:cross_squad_same] || 0).to_f / cs_total * 100).round(1) : 0 %>%; background: var(--ink-50);"></div>
-                  <div class="stackbar__seg" style="width: <%= cs_total > 0 ? ((r[:cross_squad_cross] || 0).to_f / cs_total * 100).round(1) : 0 %>%; background: var(--accent);"></div>
+                <div class="stackbar" title="Same: <%= r[:cross_team_same] || 0 %> · Cross: <%= r[:cross_team_cross] || 0 %>">
+                  <div class="stackbar__seg" style="width: <%= cs_total > 0 ? ((r[:cross_team_same] || 0).to_f / cs_total * 100).round(1) : 0 %>%; background: var(--ink-50);"></div>
+                  <div class="stackbar__seg" style="width: <%= cs_total > 0 ? ((r[:cross_team_cross] || 0).to_f / cs_total * 100).round(1) : 0 %>%; background: var(--accent);"></div>
                 </div>
               </td>
-              <td style="background: <%= heatmap(r[:cross_squad_rate], min: cs_min, max: cs_max, neutral: true) %>"><%= format_pct(r[:cross_squad_rate]) %></td>
+              <td style="background: <%= heatmap(r[:cross_team_rate], min: cs_min, max: cs_max, neutral: true) %>"><%= format_pct(r[:cross_team_rate]) %></td>
               <td class="mono"><%= cs_total %></td>
             </tr>
             <%- end -%>

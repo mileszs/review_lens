@@ -70,13 +70,13 @@ RSpec.describe ReviewLens::Presentation::TeamReport do
         top_3_share: 55,
         health: :healthy
       },
-      cross_squad: {
-        same_squad_reviews: 100,
-        cross_squad_reviews: 80,
+      cross_team: {
+        same_team_reviews: 100,
+        cross_team_reviews: 80,
         external_reviews: 57,
-        cross_squad_rate: 44.4,
+        cross_team_rate: 44.4,
         reviewer_stats: [
-          { reviewer_login: 'alice', same_squad: 20, cross_squad: 37, cross_squad_rate: 64.9 }
+          { reviewer_login: 'alice', same_team: 20, cross_team: 37, cross_team_rate: 64.9 }
         ]
       },
       response_times: {
