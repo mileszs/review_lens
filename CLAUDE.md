@@ -231,10 +231,5 @@ CDN link or external asset.
   bypasses it.
 - Business hours skip weekends but have **no holiday calendar**. Say so rather
   than implying precision the code doesn't have.
-
-## Release status
-
-Not published. This was extracted from CareerPlug-internal tooling and needs
-their sign-off before it goes public. Don't push to a remote, publish to
-RubyGems, or add a git remote unless explicitly asked. Before any public
-release, re-check for real logins, internal repo names, and credentials.
+- **Fixtures use made-up logins only** (alice, bob, carol…). Never copy real
+  people's logins or numbers into specs — this repo is public.
